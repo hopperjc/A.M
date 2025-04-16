@@ -4,12 +4,12 @@ Este repositório contém a implementação completa da **Questão 1**, **Quest�
 
 ---
 
-## 🧪 Experimento (Questão 1)
+##  Experimento (Questão 1)
 
-### ✅ Objetivo
+###  Objetivo
 Aplicar o algoritmo **VKCM-K** com kernel Gaussiano para identificar agrupamentos no dataset SPECTF. A performance é avaliada com **índice de Silhouette** e **Adjusted Rand Index (ARI)**.
 
-### 📌 Etapas
+###  Etapas
 
 1. **Pré-processamento dos dados**
    - Normalização
@@ -34,7 +34,7 @@ Aplicar o algoritmo **VKCM-K** com kernel Gaussiano para identificar agrupamento
 
 ---
 
-## 📦 Requisitos
+##  Requisitos
 
 Instale os pacotes com:
 
