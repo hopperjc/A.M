@@ -41,34 +41,6 @@ class BayesianGaussianClassifier:
             proba.append(posteriors)
         return np.array(proba)
 
-
-class BayesianParzenClassifier:
-    def __init__(self, h=1.0):
-        self.h = h
-        self.classes_ = None
-        self.data_ = {}
-        self.priors_ = {}
-
-    def fit(self, X, y):
-        self.classes_ = np.unique(y)
-        for c in self.classes_:
-            self.data_[c] = X[y == c]
-            self.priors_[c] = self.data_[c].shape[0] / X.shape[0]
-
-    def _kernel(self, x, xi):
-        return norm.pdf((x - xi) / self.h).prod()
-
-    def predict(self, X):
-        predictions = []
-        for x in X:
-            posteriors = []
-            for c in self.classes_:
-                density = np.mean([self._kernel(x, xi) for xi in self.data_[c]])
-                posteriors.append(density * self.priors_[c])
-            predictions.append(self.classes_[np.argmax(posteriors)])
-        return np.array(predictions)
-
-
 class BayesianKNNClassifier:
     def __init__(self, n_neighbors=3, metric="euclidean"):
         self.model = KNeighborsClassifier(n_neighbors=n_neighbors, metric=metric)
