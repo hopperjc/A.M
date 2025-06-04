@@ -1,11 +1,12 @@
+from ensurepip import bootstrap
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, cross_val_score, GridSearchCV
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from scipy.stats import friedmanchisquare
 from classifiers import BayesianKNNClassifier
 from sklearn.linear_model import LogisticRegression
-
+from scipy.stats import t
 
 def cross_validate_model(model, X, y, n_runs=30, n_folds=10, seed=42):
     rng = np.random.RandomState(seed)
@@ -42,52 +43,39 @@ def prepare_friedman_input(list_of_dfs, metric="accuracy"):
 
 
 def select_best_bayesian_knn(X_train, y_train):
-    best_score = -1
-    best_params = {}
-    k_values = [1, 3, 5, 7, 9]
-    metrics = ["euclidean", "manhattan", "chebyshev"]
+    param_grid = {
+        "n_neighbors": [1, 3, 5, 7, 9],
+        "metric": ["euclidean", "manhattan", "chebyshev"]
+    }
 
+    model = BayesianKNNClassifier()
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
-    for metric in metrics:
-        for k in k_values:
-            scores = []
-            for train_idx, val_idx in skf.split(X_train, y_train):
-                model = BayesianKNNClassifier(n_neighbors=k, metric=metric)
-                model.fit(X_train[train_idx], y_train[train_idx])
-                y_pred = model.predict(X_train[val_idx])
-                scores.append(f1_score(y_train[val_idx], y_pred, zero_division=0))
-            avg_score = np.mean(scores)
-            if avg_score > best_score:
-                best_score = avg_score
-                best_params = {"n_neighbors": k, "metric": metric}
+    grid = GridSearchCV(model, param_grid, cv=skf, scoring="f1", error_score='raise')
+    grid.fit(X_train, y_train)
 
-    return best_params
+    return grid.best_params_
 
 
 def select_best_logistic(X_train, y_train):
-    best_score = -1
-    best_params = {}
-    Cs = [0.01, 0.1, 1, 10, 100]
-    penalties = ['l2']  
+    param_grid = {
+        "C": [0.01, 0.1, 1, 10, 100],
+        "penalty": ['l1', 'l2'],
+        "solver": ['liblinear', 'saga']
+    }
 
+    model = LogisticRegression(max_iter=1000)
     skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
-    for C in Cs:
-        for penalty in penalties:
-            scores = []
-            for train_idx, val_idx in skf.split(X_train, y_train):
-                try:
-                    model = LogisticRegression(C=C, penalty=penalty, solver='liblinear')
-                    model.fit(X_train[train_idx], y_train[train_idx])
-                    y_pred = model.predict(X_train[val_idx])
-                    scores.append(f1_score(y_train[val_idx], y_pred, zero_division=0))
-                except Exception:
-                    continue
-            avg_score = np.mean(scores)
-            if avg_score > best_score:
-                best_score = avg_score
-                best_params = {"C": C, "penalty": penalty}
+    grid = GridSearchCV(model, param_grid, cv=skf, scoring="f1", error_score='raise')
+    grid.fit(X_train, y_train)
 
-    return best_params
+    return grid.best_params_
 
+
+def intervalo_confianca(data, confidence=0.95):
+    data = np.array(data)
+    mean = np.mean(data)
+    sem = np.std(data, ddof=1) / np.sqrt(len(data))  # erro padrão
+    h = sem * t.ppf((1 + confidence) / 2, len(data) - 1)
+    return mean, h

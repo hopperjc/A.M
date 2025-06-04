@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.stats import multivariate_normal, norm
+from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.base import BaseEstimator, ClassifierMixin
 
 class BayesianGaussianClassifier:
     def __init__(self):
@@ -69,12 +71,16 @@ class BayesianParzenClassifier:
         return np.array(predictions)
 
 
-class BayesianKNNClassifier:
+class BayesianKNNClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self, n_neighbors=3, metric="euclidean"):
+        self.n_neighbors = n_neighbors
+        self.metric = metric
         self.model = KNeighborsClassifier(n_neighbors=n_neighbors, metric=metric)
 
     def fit(self, X, y):
+        self.model = KNeighborsClassifier(n_neighbors=self.n_neighbors, metric=self.metric)
         self.model.fit(X, y)
+        return self
 
     def predict(self, X):
         return self.model.predict(X)
@@ -82,6 +88,24 @@ class BayesianKNNClassifier:
     def predict_proba(self, X):
         return self.model.predict_proba(X)
 
+
+class BayesianLogisticRegression:
+    def __init__(self, C=1.0, penalty='l2', solver='liblinear'):
+        self.model = LogisticRegression(
+            C=C,
+            penalty=penalty,
+            solver=solver,
+            max_iter=1000
+        )
+    
+    def fit(self, X, y):
+        self.model.fit(X, y)
+    
+    def predict_proba(self, X):
+        return self.model.predict_proba(X)
+    
+    def predict(self, X):
+        return self.model.predict(X)
 
 class MajorityVoteClassifier:
     def __init__(self, classifiers):
