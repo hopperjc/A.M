@@ -1,25 +1,31 @@
-[project]
+# Seção de metadados do projeto, agora usando o padrão do Poetry [tool.poetry]
+[tool.poetry]
 name = "a-m"
 version = "0.1.0"
 description = ""
-authors = [
-    {name = "Matheus"}
-]
+authors = ["Matheus"]
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = [
-    "pandas (>=2.2.3,<3.0.0)",
-    "scikit-learn (>=1.6.1,<2.0.0)",
-    "matplotlib (>=3.10.1,<4.0.0)",
-    "seaborn (>=0.13.2,<0.14.0)",
-    "imblearn (>=0.0,<0.1)",
-    "numpy (>=2.2.5,<3.0.0)"
-]
+# A dependência do Python é definida dentro da seção de dependências abaixo
 
-[build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+# Dependências principais do projeto, com versões atualizadas
+[tool.poetry.dependencies]
+python = ">=3.12"
+pandas = ">=2.2.3,<3.0.0"
+scikit-learn = ">=1.6.1,<2.0.0"
+matplotlib = ">=3.10.1,<4.0.0"
+seaborn = ">=0.13.2,<0.14.0"
+# O nome do pacote foi corrigido de 'imblearn' para 'imbalanced-learn'
+imblearn = ">=0.0,<0.1"
+numpy = ">=2.2.5,<3.0.0"
 
+# Dependências de desenvolvimento, mantidas em um grupo separado
+wandb = "^0.20.1"
+scikit-posthocs = "^0.11.4"
+tqdm = "^4.67.1"
 [tool.poetry.group.dev.dependencies]
 ipykernel = "^6.29.5"
 
+# Configuração do sistema de build, com o poetry-core atualizado
+[build-system]
+requires = ["poetry-core>=1.9.0"]
+build-backend = "poetry.core.masonry.api"
