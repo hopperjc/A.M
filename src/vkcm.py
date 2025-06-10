@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.metrics import pairwise_distances, silhouette_score, adjusted_rand_score
 from sklearn.utils import check_random_state
 
+
 class VKCM:
     def __init__(self, n_clusters=2, max_iter=100, tol=1e-4, gamma=1.0, random_state=None):
         self.n_clusters = n_clusters
@@ -26,7 +27,7 @@ class VKCM:
 
     def fit(self, X):
         n_samples, n_features = X.shape
-        w = np.ones(n_features) / n_features
+        w = np.ones(n_features)
         labels = self.random_state.randint(self.n_clusters, size=n_samples)
         prev_labels = np.copy(labels)
 
@@ -90,3 +91,6 @@ def evaluate_varying_k(X, y_true=None, k_values=[2, 3, 4, 5], runs=50, gamma=1.0
 
     best_k = max(results, key=lambda k: results[k]["avg_silhouette"])
     return best_k, results[best_k], results
+
+
+

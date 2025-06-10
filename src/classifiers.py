@@ -43,7 +43,6 @@ class BayesianGaussianClassifier:
             proba.append(posteriors)
         return np.array(proba)
 
-
 class BayesianParzenClassifier:
     def __init__(self, h=1.0):
         self.h = h
