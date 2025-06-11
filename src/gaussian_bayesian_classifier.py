@@ -1,5 +1,3 @@
-# Arquivo: src/gaussian_bayesian_classifier.py (ou no topo do seu script principal)
-
 import numpy as np
 from scipy.linalg import LinAlgError
 import warnings
@@ -9,7 +7,14 @@ from sklearn.utils.validation import check_is_fitted, validate_data
 from sklearn.utils.multiclass import type_of_target
 from scipy.special import logsumexp
 
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import accuracy_score, classification_report
 
+
+# --- IMPLEMENTAÇÃO CLASSIFICADOR BAYESIANO GAUSSIANO ---
 class GaussianBayesClassifier(ClassifierMixin, BaseEstimator):
     """ Classificador Bayesiano Gaussiano com MLE para parâmetros. """
     _estimator_type = "classifier"
@@ -18,8 +23,6 @@ class GaussianBayesClassifier(ClassifierMixin, BaseEstimator):
         self.reg_epsilon = reg_epsilon
 
     def fit(self, X, y):
-        # ANTES: X, y = self._validate_data(X, y)
-        # DEPOIS: Usamos a nova função, passando 'self' como primeiro argumento
         X, y = validate_data(self, X, y)
 
         y_type = type_of_target(y)
@@ -68,16 +71,12 @@ class GaussianBayesClassifier(ClassifierMixin, BaseEstimator):
         return log_likelihood + log_priors
 
     def predict_log_proba(self, X):
-        # ANTES: X = self._validate_data(X, reset=False)
-        # DEPOIS: Usamos a nova função
         X = validate_data(self, X, reset=False)
         log_posterior_unnormalized = self._log_posterior(X)
         log_evidence = logsumexp(log_posterior_unnormalized, axis=1, keepdims=True)
         return log_posterior_unnormalized - log_evidence
 
     def predict_proba(self, X):
-        # ANTES: X = self._validate_data(X, reset=False)
-        # DEPOIS: Usamos a nova função
         X = validate_data(self, X, reset=False)
         return np.exp(self.predict_log_proba(X))
 
@@ -85,3 +84,43 @@ class GaussianBayesClassifier(ClassifierMixin, BaseEstimator):
         check_is_fitted(self)
         X = validate_data(self, X, reset=False)
         return self.classes_[np.argmax(self._log_posterior(X), axis=1)]
+
+
+if __name__ == '__main__':
+    from sklearn.datasets import load_digits
+
+    print("Carregando o dataset Digits...")
+    digits = load_digits()
+    X, y = digits.data, digits.target
+
+    # 2. Dividir os dados em treino e teste
+    print("Dividindo os dados em treino e teste (80/20)...")
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42, stratify=y
+    )
+
+    # 3. Definir o pipeline
+    print("Construindo o pipeline...")
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),
+        ('gaussian_bayes', GaussianBayesClassifier())
+    ])
+
+    # 4. Treinar o pipeline
+    print("Treinando o pipeline com os dados de treino...")
+    pipeline.fit(X_train, y_train)
+
+    # 5. Fazer predições com o pipeline treinado
+    print("Fazendo predições nos dados de teste...")
+    y_pred = pipeline.predict(X_test)
+
+    # 6. Avaliar os resultados
+    print("\n--- Resultados da Avaliação no Dataset Digits ---")
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f"Acurácia: {accuracy:.4f}")
+
+    print("\nRelatório de Classificação Detalhado:")
+    # Converte os nomes dos alvos para string para o relatório
+    target_names = [str(name) for name in digits.target_names]
+    report = classification_report(y_test, y_pred, target_names=target_names)
+    print(report)
